@@ -73,9 +73,6 @@ jobs:
           chmod 600 private_key.pem
 
       - name: Set up SSH
-        with:
-          source: "."
-          target: "/home/ubuntu/project"
         run: |
           mkdir -p ~/.ssh
           mv private_key.pem ~/.ssh/id_rsa
@@ -86,7 +83,9 @@ jobs:
         env:
           HOSTNAME: ${{ secrets.HOST }}
           USER_NAME: ${{ secrets.USERNAME }}
-
+        with:
+          source: "."
+          target: "/home/ubuntu/project"
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${USER_NAME}@${HOSTNAME} '
               cd /home/ubuntu/project  # Replace with your project directory on EC2
