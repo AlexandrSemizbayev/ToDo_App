@@ -15,7 +15,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python3 -m pip install --upgrade pip && python3 -m pip install -r requirements.txt
+          sudo python3 -m pip install --upgrade pip && python3 -m pip install -r requirements.txt
 
       - name: Deploy to EC2
         uses: appleboy/scp-action@master
