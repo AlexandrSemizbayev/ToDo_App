@@ -88,13 +88,27 @@ jobs:
 #          target: "/home/ubuntu/project"
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${USER_NAME}@${HOSTNAME} '
-              cd /home/ubuntu/project  # Set the path to your Django project directory on EC2
-              source venv/bin/activate  # Activate virtual environment
-              git fetch --all
-              git reset --hard origin/main  # Set the branch to main
-              git pull origin main
-              pip install -r requirements.txt  # Install dependencies
-              python manage.py migrate  # Apply migrations
-              python manage.py collectstatic --noinput  # Collect static files
-              sudo systemctl restart gunicorn.service  # Restart Gunicorn or your WSGI server
-          '
+          cd /home/ubuntu/project  # Navigate to your Django project directory on EC2
+          
+          # Activate virtual environment if needed
+          source venv/bin/activate  # Adjust this line based on your setup
+          
+          # Fetch latest changes from the repository
+          git fetch origin
+          git reset --hard main  # Assuming main branch is correct
+          
+          # Install Python dependencies
+          if [ -f "requirements.txt" ]; then
+          pip install -r requirements.txt
+          else
+          echo "requirements.txt not found"
+          exit 1
+          fi
+          
+          # Apply database migrations and collect static files
+          python manage.py migrate
+          python manage.py collectstatic --noinput
+          
+          # Restart Gunicorn service (replace with your service restart command)
+          sudo systemctl restart gunicorn.service  # Adjust this line based on your setup
+        '
