@@ -83,9 +83,9 @@ jobs:
         env:
           HOSTNAME: ${{ secrets.HOST }}
           USER_NAME: ${{ secrets.USERNAME }}
-        with:
-          source: "."
-          target: "/home/ubuntu/project"
+#        with:
+#          source: "."
+#          target: "/home/ubuntu/project"
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${USER_NAME}@${HOSTNAME} '
               cd /home/ubuntu/project  # Replace with your project directory on EC2
