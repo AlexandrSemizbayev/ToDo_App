@@ -16,7 +16,10 @@ jobs:
 #      - name: Install dependencies
 #        run: |
 #          sudo python -m pip install --upgrade pip && sudo python -m pip install -r requirements.txt
-
+      - name: Set up SSH for GitHub Actions
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Deploy to EC2
         uses: appleboy/scp-action@master
         with:
