@@ -90,8 +90,8 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${USER_NAME}@${HOSTNAME} '
               cd /home/ubuntu/project  # Replace with your project directory on EC2
               git fetch --all
-              git reset --hard origin/dev  # Adjust branch name as needed
-              git pull origin dev
+              git reset --hard origin/main  # Adjust branch name as needed
+              git pull origin main
               source /home/ubuntu/project/venv/bin/activate  # Activate your virtual environment
               pip install -r requirements.txt  # Install dependencies
               python manage.py migrate  # Apply migrations if needed
