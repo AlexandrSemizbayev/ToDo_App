@@ -1,43 +1,97 @@
-name: Deploy to EC2
+#name: Deploy to EC2
+#
+#on:
+#  push:
+#    branches:
+#      - main
+#
+#jobs:
+#  deploy:
+#    runs-on: ubuntu-latest
+#    environment: production
+#
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v2
+#
+##      - name: Install dependencies
+##        run: |
+##          sudo python -m pip install --upgrade pip && sudo python -m pip install -r requirements.txt
+##      - name: Set up SSH for GitHub Actions
+##        uses: webfactory/ssh-agent@v0.5.4
+##        with:
+##          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+#
+#      - name: Set up SSH for deployment
+#        run: |
+#          mkdir -p ~/.ssh
+#          echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 -d > ~/.ssh/id_rsa.pem  # Decode from Base64 and write to .pem file
+#          chmod 600 ~/.ssh/id_rsa.pem
+#          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts  # Add host key to known hosts
+#          mv ~/.ssh/id_rsa.pem ~/.ssh/id_rsa  # Rename to .pem extension
+#
+#      - name: Deploy to EC2
+#        uses: appleboy/scp-action@master
+#        with:
+#          host: ${{ secrets.HOST }}
+#          username: ${{ secrets.USERNAME }}
+#          key: ${{ secrets.SSH_PRIVATE_KEY }}
+#          port: ${{ secrets.PORT }}
+#          source: "."
+#          target: "/home/ubuntu/project"
+#
+#      - name: SSH into EC2 and restart server
+#        uses: appleboy/ssh-action@master
+#        with:
+#          host: ${{ secrets.HOST }}
+#          username: ${{ secrets.USERNAME }}
+#          key: ${{ secrets.SSH_PRIVATE_KEY }}
+#          port: ${{ secrets.PORT }}
+#          script: |
+#            cd /home/ubuntu/project
+#            sudo systemctl restart gunicorn
+name: Deploy Django Project
 
 on:
   push:
     branches:
-      - main
+      - dev  # Replace with your branch name
 
 jobs:
   deploy:
+    name: Deploy to EC2
     runs-on: ubuntu-latest
-    environment: production
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-#      - name: Install dependencies
-#        run: |
-#          sudo python -m pip install --upgrade pip && sudo python -m pip install -r requirements.txt
-#      - name: Set up SSH for GitHub Actions
-#        uses: webfactory/ssh-agent@v0.5.4
-#        with:
-#          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-      - name: Deploy to EC2
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.PORT }}
-          source: "."
-          target: "/home/ubuntu/project"
+      - name: Decode SSH private key
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 -d > private_key.pem
+          chmod 600 private_key.pem
 
-      - name: SSH into EC2 and restart server
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.PORT }}
-          script: |
-            cd /home/ubuntu/project
-            sudo systemctl restart gunicorn
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          mv private_key.pem ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Deploy to EC2
+        env:
+          HOSTNAME: ${{ secrets.SSH_HOST }}
+          USER_NAME: ${{ secrets.SSH_USERNAME }}
+
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${USER_NAME}@${HOSTNAME} '
+              cd /path/to/your/django/project  # Replace with your project directory on EC2
+              git fetch --all
+              git reset --hard origin/dev  # Adjust branch name as needed
+              git pull origin dev
+              source /path/to/your/venv/bin/activate  # Activate your virtual environment
+              pip install -r requirements.txt  # Install dependencies
+              python manage.py migrate  # Apply migrations if needed
+              python manage.py collectstatic --noinput  # Collect static files
+              sudo systemctl restart gunicorn.service  # Restart Gunicorn or your WSGI server
+          '
