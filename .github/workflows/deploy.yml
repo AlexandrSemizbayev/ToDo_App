@@ -55,7 +55,7 @@ name: Deploy Django Project
 on:
   push:
     branches:
-      - dev  # Replace with your branch name
+      - main
 
 jobs:
   deploy:
