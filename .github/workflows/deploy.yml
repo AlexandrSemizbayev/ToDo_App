@@ -76,13 +76,13 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           mv private_key.pem ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
           chmod 600 ~/.ssh/id_rsa
 
       - name: Deploy to EC2
         env:
-          HOSTNAME: ${{ secrets.SSH_HOST }}
-          USER_NAME: ${{ secrets.SSH_USERNAME }}
+          HOSTNAME: ${{ secrets.HOST }}
+          USER_NAME: ${{ secrets.USERNAME }}
 
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${USER_NAME}@${HOSTNAME} '
