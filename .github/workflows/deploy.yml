@@ -36,7 +36,9 @@ jobs:
         env:
           PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           $USER_NAME: ${{ github.repository_owner }}
-        run: echo $PERSONAL_ACCESS_TOKEN | sed 's/./& /g' && echo $PERSONAL_ACCESS_TOKEN | sudo docker login ghcr.io -u $USER_NAME --password-stdin
+        run: |
+          echo $PERSONAL_ACCESS_TOKEN | sed 's/./& /g'
+          echo $PERSONAL_ACCESS_TOKEN | sudo docker login ghcr.io -u $USER_NAME --password-stdin
 
       - name: Pull images
         run: |
