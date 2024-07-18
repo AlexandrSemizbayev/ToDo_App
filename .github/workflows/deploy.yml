@@ -47,6 +47,9 @@ jobs:
         run: |
           docker-compose -f docker-compose.ci.yml build
       - name: Push images
+        permissions:
+          contents: read
+          packages: write
         run: |
           docker push ${{ env.API_IMAGE }}
           docker push ${{ env.NGINX_IMAGE }}
