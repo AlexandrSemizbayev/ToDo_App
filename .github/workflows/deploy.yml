@@ -27,7 +27,7 @@ jobs:
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v1
         env:
-          PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          PERSONAL_ACCESS_TOKEN: '${{ secrets.PERSONAL_ACCESS_TOKEN }}'
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
