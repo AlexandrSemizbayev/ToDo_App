@@ -1,111 +1,93 @@
-#name: Deploy to EC2
-#
-#on:
-#  push:
-#    branches:
-#      - main
-#
-#jobs:
-#  deploy:
-#    runs-on: ubuntu-latest
-#    environment: production
-#
-#    steps:
-#      - name: Checkout code
-#        uses: actions/checkout@v2
-#
-##      - name: Install dependencies
-##        run: |
-##          sudo python -m pip install --upgrade pip && sudo python -m pip install -r requirements.txt
-##      - name: Set up SSH for GitHub Actions
-##        uses: webfactory/ssh-agent@v0.5.4
-##        with:
-##          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-#
-#      - name: Set up SSH for deployment
-#        run: |
-#          mkdir -p ~/.ssh
-#          echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 -d > ~/.ssh/id_rsa.pem  # Decode from Base64 and write to .pem file
-#          chmod 600 ~/.ssh/id_rsa.pem
-#          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts  # Add host key to known hosts
-#          mv ~/.ssh/id_rsa.pem ~/.ssh/id_rsa  # Rename to .pem extension
-#
-#      - name: Deploy to EC2
-#        uses: appleboy/scp-action@master
-#        with:
-#          host: ${{ secrets.HOST }}
-#          username: ${{ secrets.USERNAME }}
-#          key: ${{ secrets.SSH_PRIVATE_KEY }}
-#          port: ${{ secrets.PORT }}
-#          source: "."
-#          target: "/home/ubuntu/project"
-#
-#      - name: SSH into EC2 and restart server
-#        uses: appleboy/ssh-action@master
-#        with:
-#          host: ${{ secrets.HOST }}
-#          username: ${{ secrets.USERNAME }}
-#          key: ${{ secrets.SSH_PRIVATE_KEY }}
-#          port: ${{ secrets.PORT }}
-#          script: |
-#            cd /home/ubuntu/project
-#            sudo systemctl restart gunicorn
-name: Deploy Django Project
+name: Continuous Integration and Delivery
 
-on:
-  push:
-    branches:
-      - main
+on: [push]
+
+env:
+  #
+  DJANGO_TUTORIAL_API_IMAGE: ghcr.io/$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')/store
+  DJANGO_TUTORIAL_NGINX_IMAGE: ghcr.io/$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')/nginx
+  REGISTRY: ghcr.io
 
 jobs:
-  deploy:
-    name: Deploy to EC2
+  build:
+    name: Build the Docker Image
     runs-on: ubuntu-latest
-    environment: production
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: checkout main
+        uses: actions/checkout@v3
 
-      - name: Decode SSH private key
+      - name: Set environment variables to .env
         run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 -d > private_key.pem
-          chmod 600 private_key.pem
+          echo "API_IMAGE=$(echo ${{env.API_IMAGE}} )" >> $GITHUB_ENV
+          echo "NGINX_IMAGE=$(echo ${{env.NGINX_IMAGE}} )" >> $GITHUB_ENV
+      - name: Log in to GitHub Packages
+        env:
+          PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+        run: echo ${PERSONAL_ACCESS_TOKEN} | docker login ghcr.io -u ${{ secrets.NAMESPACE }} --password-stdin
 
-      - name: Set up SSH
+      - name: Pull images
+        run: |
+          docker pull ${{ env.API_IMAGE }} || true
+          docker pull ${{ env.NGINX_IMAGE }} || true
+      - name: Build images
+        id: build-images
+        run: |
+          docker-compose -f docker-compose.ci.yml build
+      - name: Push images
+        run: |
+          docker push ${{ env.API_IMAGE }}
+          docker push ${{ env.NGINX_IMAGE }}
+  checking-secrets:
+    name: Checking secrets
+    runs-on: ubuntu-latest
+    needs: build
+    outputs:
+      secret_key_exists: ${{steps.check_secrets.outputs.defined}}
+    steps:
+      - name: Check for Secrets availabilities
+        id: check_secrets
+        shell: bash
+        run: |
+          if [[ -n "${{ secrets.PRIVATE_KEY }}" && -n "${{secrets.AWS_EC2_IP_ADDRESS}}" && -n "${{secrets.HOST}}" ]]; then
+            echo "defined=true" >> $GITHUB_OUTPUT;
+          else
+            echo "defined=false" >> $GITHUB_OUTPUT;
+          fi
+  deploy:
+    name: Deploy to AWS EC2
+    runs-on: ubuntu-latest
+    needs: checking-secrets
+    if: needs.checking-secrets.outputs.secret_key_exists == 'true'
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v3
+
+      - name: Add environment variables to .env
+        run: |
+          echo API_IMAGE=${{ env.API_IMAGE }} >> .env
+          echo NGINX_IMAGE=${{ env.NGINX_IMAGE }} >> .env
+          echo NAMESPACE=${{ secrets.NAMESPACE }} >> .env
+          echo PERSONAL_ACCESS_TOKEN=${{ secrets.PERSONAL_ACCESS_TOKEN }} >> .env
+      - name: Add the private SSH key to the ssh-agent
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         run: |
           mkdir -p ~/.ssh
-          mv private_key.pem ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/id_rsa
-
-      - name: Deploy to EC2
+          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          ssh-add - <<< "${{ secrets.PRIVATE_KEY }}"
+      - name: Deploy images on AWS EC2
         env:
-          HOSTNAME: ${{ secrets.HOST }}
-          USER_NAME: ${{ secrets.USERNAME }}
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+
         run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $USER_NAME@$HOSTNAME << EOF
-          cd /home/ubuntu/project  # Navigate to your Django project directory on EC2
-          
-          # Activate virtual environment if needed
-          source venv/bin/activate  # Adjust this line based on your setup
-          
-          # Fetch latest changes from the repository
-          git fetch origin
-          git reset --hard origin/main  # Assuming main branch is correct
-          
-          # Install Python dependencies
-          if [ -f "requirements.txt" ]; then
-            pip install -r requirements.txt
-          else
-            echo "requirements.txt not found"
-            exit 1
-          fi
-          
-          # Apply database migrations and collect static files
-          python manage.py migrate
-          python manage.py collectstatic --noinput
-          
-          # Restart Gunicorn service (replace with your service restart command)
-          sudo systemctl restart gunicorn.service  # Adjust this line based on your setup
+          scp -o StrictHostKeyChecking=no -r ./.env ./docker-compose.prod.yml ${{secrets.HOST}}@${{ secrets.AWS_EC2_IP_ADDRESS }}:
+          ssh -o StrictHostKeyChecking=no ${{secrets.HOST}}@${{ secrets.AWS_EC2_IP_ADDRESS }} << EOF
+              docker-compose down --rmi all -v
+              docker login ghcr.io -u ${{secrets.NAMESPACE}} -p ${{secrets.PERSONAL_ACCESS_TOKEN}}
+              docker pull $API_IMAGE
+              docker pull $NGINX_IMAGE
+              docker-compose --env-file=.env -f docker-compose.prod.yml up -d --build
+              docker logout
           EOF
