@@ -24,19 +24,19 @@ jobs:
         run: |
           echo "API_IMAGE=$(echo ${{env.API_IMAGE}} )" >> $GITHUB_ENV
           echo "NGINX_IMAGE=$(echo ${{env.NGINX_IMAGE}} )" >> $GITHUB_ENV
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        env:
-          PERSONAL_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          registry: ghcr.io
-          username: "${{ github.actor }}"
-          password: ${{ secrets.GITHUB_TOKEN }}
-#      - name: Log in to GitHub Packages
+#      - name: Log in to GitHub Container Registry
+#        uses: docker/login-action@v3
 #        env:
-#          PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-#          USER_NAME: ${{ github.repository_owner }}
-#        run: echo "$PERSONAL_ACCESS_TOKEN" | sudo docker login ghcr.io -u "$USER_NAME" --password-stdin
+#          PERSONAL_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          registry: ghcr.io
+#          username: "${{ github.actor }}"
+#          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Log in to GitHub Packages
+        env:
+          PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          USER_NAME: ${{ github.repository_owner }}
+        run: echo $PERSONAL_ACCESS_TOKEN | sudo docker login ghcr.io -u "$USER_NAME" --password-stdin
 
       - name: Pull images
         run: |
@@ -47,9 +47,6 @@ jobs:
         run: |
           docker-compose -f docker-compose.ci.yml build
       - name: Push images
-        permissions:
-          contents: read
-          packages: write
         run: |
           docker push ${{ env.API_IMAGE }}
           docker push ${{ env.NGINX_IMAGE }}
