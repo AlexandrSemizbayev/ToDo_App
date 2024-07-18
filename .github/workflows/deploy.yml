@@ -35,12 +35,17 @@ jobs:
       - name: Check passed var
         env:
           PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-        run: echo $PERSONAL_ACCESS_TOKEN | sed 's/./& /g'
+        run: |
+          if [[ -n "${{ secrets.PRIVATE_KEY }}" && -n "$PERSONAL_ACCESS_TOKEN" && -n "${{secrets.HOST}}" ]]; then
+            echo "defined=true" >> $GITHUB_OUTPUT;
+          else
+            echo "defined=false" >> $GITHUB_OUTPUT;
+          fi
       - name: Log in to GitHub Packages
         env:
           PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           USER_NAME: ${{ github.repository_owner }}
-        run: echo $PERSONAL_ACCESS_TOKEN | sudo docker login ghcr.io -u $USER_NAME --password-stdin
+        run: echo "$PERSONAL_ACCESS_TOKEN" | sudo docker login ghcr.io -u "$USER_NAME" --password-stdin
 
       - name: Pull images
         run: |
