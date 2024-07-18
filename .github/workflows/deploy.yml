@@ -24,7 +24,7 @@ jobs:
       - name: Log in to GitHub Packages
 #        env:
 #          PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-        run: echo ${{ secrets.PERSONAL_ACCESS_TOKEN }} | docker login ghcr.io -u ${{ secrets.NAMESPACE }} --password-stdin
+        run: echo ${{ secrets.PERSONAL_ACCESS_TOKEN }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
 
       - name: Pull images
         run: |
@@ -67,7 +67,7 @@ jobs:
         run: |
           echo API_IMAGE=${{ env.API_IMAGE }} >> .env
           echo NGINX_IMAGE=${{ env.NGINX_IMAGE }} >> .env
-          echo NAMESPACE=${{ secrets.NAMESPACE }} >> .env
+          echo NAMESPACE=${{ github.repository_owner }} >> .env
           echo PERSONAL_ACCESS_TOKEN=${{ secrets.PERSONAL_ACCESS_TOKEN }} >> .env
       - name: Add the private SSH key to the ssh-agent
         env:
@@ -85,7 +85,7 @@ jobs:
           scp -o StrictHostKeyChecking=no -r ./.env ./docker-compose.prod.yml ${{secrets.HOST}}@${{ secrets.AWS_EC2_IP_ADDRESS }}:
           ssh -o StrictHostKeyChecking=no ${{secrets.HOST}}@${{ secrets.AWS_EC2_IP_ADDRESS }} << EOF
               docker-compose down --rmi all -v
-              docker login ghcr.io -u ${{secrets.NAMESPACE}} -p ${{secrets.PERSONAL_ACCESS_TOKEN}}
+              docker login ghcr.io -u ${{ github.repository_owner }} -p ${{secrets.PERSONAL_ACCESS_TOKEN}}
               docker pull $API_IMAGE
               docker pull $NGINX_IMAGE
               docker-compose --env-file=.env -f docker-compose.prod.yml up -d --build
