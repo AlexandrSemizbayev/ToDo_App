@@ -63,7 +63,6 @@ jobs:
         id: check_secrets
         shell: bash
         run: |
-#          && -n "${{secrets.AWS_EC2_IP_ADDRESS}}" && -n "${{secrets.HOST}}"
           if [[ -n "$PRIVATE_KEY" ]]; then
             echo "is defined";
             echo "defined=true" >> $GITHUB_OUTPUT;
