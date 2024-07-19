@@ -138,7 +138,7 @@ jobs:
 
         run: |
           
-          scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -r ./.env ./docker-compose.prod.yml ${{ secrets.HOST }}@${{ secrets.AWS_EC2_IP_ADDRESS }}:
+          scp -o StrictHostKeyChecking=no -r ./.env ./docker-compose.prod.yml ${{secrets.AWS_HOST_USER}}@${{ secrets.AWS_EC2_IP_ADDRESS }}:
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.HOST }}@${{ secrets.AWS_EC2_IP_ADDRESS }} << EOF
               echo "connected"
               docker-compose down --rmi all -v
