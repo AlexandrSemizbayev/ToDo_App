@@ -73,7 +73,7 @@ jobs:
         id: check_secrets
         shell: bash
         run: |
-          if [[ -n "$SSH_PRIVATE_KEY" ]]; then
+          if [[ -n "${{ secrets.SSH_PRIVATE_KEY }}" ]]; then
             echo "${{ toJson(secrets) }}";
             echo "defined=true" >> $GITHUB_OUTPUT;
           else
@@ -84,6 +84,7 @@ jobs:
   deploy:
     name: Deploy to AWS EC2
     runs-on: ubuntu-latest
+    environment: production
     # needs: build
     needs: checking-secrets
     if: needs.checking-secrets.outputs.secret_key_exists == 'true'
