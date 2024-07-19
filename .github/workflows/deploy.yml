@@ -129,8 +129,8 @@ jobs:
 
         run: |
           
-          scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -r ./.env ./docker-compose.prod.yml ${{ secrets.SSH_USERNAME }}@${{ secrets.AWS_EC2_IP_ADDRESS }}:
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} << EOF
+          scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -r ./.env ./docker-compose.prod.yml ${{ secrets.HOST }}@${{ secrets.AWS_EC2_IP_ADDRESS }}:
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.HOST }}@${{ secrets.AWS_EC2_IP_ADDRESS }} << EOF
               echo "connected"
               docker-compose down --rmi all -v
               docker login ghcr.io -u ${{ github.repository_owner }} -p ${{secrets.GITHUB_TOKEN}}
