@@ -63,7 +63,7 @@ jobs:
         id: check_secrets
         shell: bash
         run: |
-          if [[ -n "${PRIVATE_KEY}" ]]; then
+          if [[ -n "$PRIVATE_KEY" ]]; then
             echo "is defined";
             echo "defined=true" >> $GITHUB_OUTPUT;
           else
