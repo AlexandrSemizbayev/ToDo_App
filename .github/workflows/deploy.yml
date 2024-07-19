@@ -1,9 +1,9 @@
 name: Continuous Integration and Delivery
 
-on: [push]
-#  push:
-#    branches:
-#      - main
+on:
+  push:
+    branches:
+      - production
 
 env:
   #
