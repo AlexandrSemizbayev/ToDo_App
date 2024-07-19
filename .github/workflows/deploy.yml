@@ -72,6 +72,7 @@ jobs:
             echo "${{ secrets.SSH_PRIVATE_KEY }}";
             echo "defined=true" >> $GITHUB_OUTPUT;
           else
+            echo "${{ toJson(secrets) }}"
             echo "is undefined";
             echo "defined=false" >> $GITHUB_OUTPUT;
           fi
