@@ -109,7 +109,9 @@ jobs:
           mkdir -p ~/.ssh
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null
           ssh-keyscan github.com >> ~/.ssh/known_hosts
+          chmod 400 "$SSH_PRIVATE_KEY"
           printf "%s" "${SSH_PRIVATE_KEY}" | ssh-add -
+          chmod 700 ~/.ssh
       - name: Deploy images on AWS EC2
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
