@@ -54,6 +54,7 @@ jobs:
   checking-secrets:
     name: Checking secrets
     runs-on: ubuntu-latest
+    secrets: inherit
     # env:
     #   PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 #    needs: build
