@@ -10,8 +10,25 @@ env:
   API_IMAGE: ghcr.io/$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')/api
   NGINX_IMAGE: ghcr.io/$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')/nginx
   REGISTRY: ghcr.io
+  SSH_PRIVATE_KEY: $(cat <<EOF
+    ${{ secrets.SSH_PRIVATE_KEY }}
+    EOF
+    )
 #secrets:
 #  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+before_script:
+#  - ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+#    ssh-keyscan github.com >> ~/.ssh/known_hosts
+#    echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+  - 'ssh-agent -a $SSH_AUTH_SOCK > /dev/null || ( apt-get update -y && apt-get install openssh-client -y )'
+  - eval $(ssh-agent -s)
+  - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+  - mkdir -p ~/.ssh
+  - touch ~/.ssh/config
+  - touch ~/.ssh/known_hosts
+  - chmod -R 400 ~/.ssh
+  - ssh-keyscan github.com >> ~/.ssh/known_hosts
 
 jobs:
   build:
@@ -101,10 +118,10 @@ jobs:
       - name: Add the private SSH key to the ssh-agent
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-          SSH_PRIVATE_KEY: $(cat <<EOF
-            ${{ secrets.SSH_PRIVATE_KEY }}
-            EOF
-            )
+#          SSH_PRIVATE_KEY: $(cat <<EOF
+#            ${{ secrets.SSH_PRIVATE_KEY }}
+#            EOF
+#            )
         run: |
           mkdir -p ~/.ssh
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null
