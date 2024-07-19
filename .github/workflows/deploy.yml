@@ -60,9 +60,12 @@ jobs:
     steps:
       - name: Check for Secrets availabilities
         id: check_secrets
+        env:
+          PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         shell: bash
         run: |
-          if [[ -n "${{ secrets.SSH_PRIVATE_KEY }}" && -n "${{secrets.AWS_EC2_IP_ADDRESS}}" && -n "${{secrets.HOST}}" ]]; then
+#          && -n "${{secrets.AWS_EC2_IP_ADDRESS}}" && -n "${{secrets.HOST}}"
+          if [[ -n "$PRIVATE_KEY" ]]; then
             echo "is defined";
             echo "defined=true" >> $GITHUB_OUTPUT;
           else
