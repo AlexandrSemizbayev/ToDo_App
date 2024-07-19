@@ -102,14 +102,14 @@ jobs:
           echo PERSONAL_ACCESS_TOKEN=${{ secrets.GITHUB_TOKEN }} >> .env
       - name: Decode SSH private key
         run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 -d > private_key.pem
-          chmod 600 private_key.pem
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 -d > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
 
       - name: Set up SSH
         run: |
-          mkdir -p ~/.ssh
-          mv private_key.pem ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
           chmod 600 ~/.ssh/id_rsa
 #      - name: Add the private SSH key to the ssh-agent
 #        env:
@@ -129,8 +129,9 @@ jobs:
 
         run: |
           
-          scp -o StrictHostKeyChecking=no -r ./.env ./docker-compose.prod.yml ${{secrets.HOST}}@${{ secrets.AWS_EC2_IP_ADDRESS }}:
+          scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -r ./.env ./docker-compose.prod.yml ${{ secrets.SSH_USERNAME }}@${{ secrets.AWS_EC2_IP_ADDRESS }}:
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} << EOF
+              echo "connected"
               docker-compose down --rmi all -v
               docker login ghcr.io -u ${{ github.repository_owner }} -p ${{secrets.GITHUB_TOKEN}}
               docker pull $API_IMAGE
