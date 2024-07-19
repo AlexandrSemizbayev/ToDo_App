@@ -62,7 +62,7 @@ jobs:
         id: check_secrets
         shell: bash
         run: |
-          if [[ -n "${{ secrets.PRIVATE_KEY }}" && -n "${{secrets.AWS_EC2_IP_ADDRESS}}" && -n "${{secrets.HOST}}" ]]; then
+          if [[ -n "${{ secrets.SSH_PRIVATE_KEY }}" && -n "${{secrets.AWS_EC2_IP_ADDRESS}}" && -n "${{secrets.HOST}}" ]]; then
             echo "defined=true" >> $GITHUB_OUTPUT;
           else
             echo "defined=false" >> $GITHUB_OUTPUT;
@@ -90,7 +90,7 @@ jobs:
           mkdir -p ~/.ssh
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null
           ssh-keyscan github.com >> ~/.ssh/known_hosts
-          ssh-add - <<< "${{ secrets.PRIVATE_KEY }}"
+          ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
       - name: Deploy images on AWS EC2
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
