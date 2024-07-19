@@ -57,6 +57,7 @@ jobs:
   checking-secrets:
     name: Checking secrets
     runs-on: ubuntu-latest
+    environment: production
 
     # env:
     #   PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
