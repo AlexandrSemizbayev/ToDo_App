@@ -54,14 +54,14 @@ jobs:
   checking-secrets:
     name: Checking secrets
     runs-on: ubuntu-latest
+    env:
+      PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 #    needs: build
     outputs:
       secret_key_exists: ${{steps.check_secrets.outputs.defined}}
     steps:
       - name: Check for Secrets availabilities
         id: check_secrets
-        env:
-          PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         shell: bash
         run: |
 #          && -n "${{secrets.AWS_EC2_IP_ADDRESS}}" && -n "${{secrets.HOST}}"
