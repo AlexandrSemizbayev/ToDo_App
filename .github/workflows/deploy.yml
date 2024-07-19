@@ -54,8 +54,8 @@ jobs:
   checking-secrets:
     name: Checking secrets
     runs-on: ubuntu-latest
-    env:
-      PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+    # env:
+    #   PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
     needs: build
     outputs:
       secret_key_exists: ${{steps.check_secrets.outputs.defined}}
@@ -64,7 +64,7 @@ jobs:
         id: check_secrets
         shell: bash
         run: |
-          if [[ -n "$PRIVATE_KEY" ]]; then
+          if [[ -n "${{ secrets.SSH_PRIVATE_KEY }}" ]]; then
             echo "is defined";
             echo "defined=true" >> $GITHUB_OUTPUT;
           else
