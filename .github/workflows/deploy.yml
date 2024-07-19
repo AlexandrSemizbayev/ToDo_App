@@ -60,6 +60,10 @@ jobs:
     outputs:
       secret_key_exists: ${{steps.check_secrets.outputs.defined}}
     steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
       - name: Check for Secrets availabilities
         id: check_secrets
         shell: bash
