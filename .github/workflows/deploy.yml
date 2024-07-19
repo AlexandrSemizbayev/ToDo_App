@@ -54,13 +54,13 @@ jobs:
   checking-secrets:
     name: Checking secrets
     runs-on: ubuntu-latest
-    env:
-      PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 #    needs: build
     outputs:
       secret_key_exists: ${{steps.check_secrets.outputs.defined}}
     steps:
       - name: Check for Secrets availabilities
+        env:
+          PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         id: check_secrets
         shell: bash
         run: |
