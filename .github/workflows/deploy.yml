@@ -100,28 +100,16 @@ jobs:
           echo NGINX_IMAGE=${{ env.NGINX_IMAGE }} >> .env
           echo NAMESPACE=${{ github.repository_owner }} >> .env
           echo PERSONAL_ACCESS_TOKEN=${{ secrets.GITHUB_TOKEN }} >> .env
-      - name: Decode SSH private key
-        run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 -d > private_key.pem
-          chmod 600 private_key.pem
+      - name: Add the private SSH key to the ssh-agent
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
-          mv private_key.pem ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/id_rsa
-#      - name: Add the private SSH key to the ssh-agent
-#        env:
-#          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-#          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-#
-#        run: |
-#          mkdir -p ~/.ssh
-#          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
-#          ssh-keyscan github.com >> ~/.ssh/known_hosts
-#          echo "${{ secrets.SSH_PRIVATE_KEY }}" | cat -v
-##          ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
+          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          printf "%s" "${SSH_PRIVATE_KEY}" | ssh-add -
       - name: Deploy images on AWS EC2
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
