@@ -54,7 +54,8 @@ jobs:
   checking-secrets:
     name: Checking secrets
     runs-on: ubuntu-latest
-    secrets: inherit
+    secrets:
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
     # env:
     #   PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 #    needs: build
@@ -69,8 +70,8 @@ jobs:
         id: check_secrets
         shell: bash
         run: |
-          if [[ -n "${{ secrets.PRIVATE_KEY }}" ]]; then
-            echo "${{ secrets.PRIVATE_KEY }}";
+          if [[ -n "$SSH_PRIVATE_KEY" ]]; then
+            echo "${{ toJson(secrets) }}";
             echo "defined=true" >> $GITHUB_OUTPUT;
           else
             echo "${{ toJson(secrets) }}"
