@@ -63,7 +63,7 @@ jobs:
 
     # env:
     #   PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-    needs: build
+#    needs: build
     outputs:
       secret_key_exists: ${{steps.check_secrets.outputs.defined}}
     steps:
