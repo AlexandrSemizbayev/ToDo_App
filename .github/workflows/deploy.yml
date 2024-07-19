@@ -54,7 +54,7 @@ jobs:
   checking-secrets:
     name: Checking secrets
     runs-on: ubuntu-latest
-    needs: build
+#    needs: build
     outputs:
       secret_key_exists: ${{steps.check_secrets.outputs.defined}}
     steps:
@@ -63,8 +63,10 @@ jobs:
         shell: bash
         run: |
           if [[ -n "${{ secrets.SSH_PRIVATE_KEY }}" && -n "${{secrets.AWS_EC2_IP_ADDRESS}}" && -n "${{secrets.HOST}}" ]]; then
+            echo "is defined";
             echo "defined=true" >> $GITHUB_OUTPUT;
           else
+            echo "is undefined";
             echo "defined=false" >> $GITHUB_OUTPUT;
           fi
   deploy:
