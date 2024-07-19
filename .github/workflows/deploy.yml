@@ -18,6 +18,7 @@ jobs:
     permissions: write-all
     name: Build the Docker Image
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
       - name: checkout main
