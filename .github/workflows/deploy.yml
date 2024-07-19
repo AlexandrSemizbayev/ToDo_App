@@ -10,7 +10,6 @@ env:
   API_IMAGE: ghcr.io/$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')/api
   NGINX_IMAGE: ghcr.io/$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')/nginx
   REGISTRY: ghcr.io
-  PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
 jobs:
   build:
@@ -55,6 +54,8 @@ jobs:
   checking-secrets:
     name: Checking secrets
     runs-on: ubuntu-latest
+    env:
+      PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 #    needs: build
     outputs:
       secret_key_exists: ${{steps.check_secrets.outputs.defined}}
