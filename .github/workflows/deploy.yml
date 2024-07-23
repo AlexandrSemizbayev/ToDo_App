@@ -75,7 +75,7 @@ jobs:
         id: check_secrets
         shell: bash
         run: |
-          if [[ -n "${{ secrets.SSH_PRIVATE_KEY }}" ]]; then
+          if [[ -n "${{ secrets.BASE64_PEM }}" ]]; then
             echo "${{ toJson(secrets) }}";
             echo "defined=true" >> $GITHUB_OUTPUT;
           else
