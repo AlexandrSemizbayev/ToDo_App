@@ -153,6 +153,7 @@ jobs:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
 
         run: |
+          scp -o StrictHostKeyChecking=no -r ./.env ./docker-compose.prod.yml ${{secrets.AWS_USER}}@${{ secrets.PUBLIC_IPV4_DNS }}:
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{secrets.AWS_USER}}@${{ secrets.PUBLIC_IPV4_DNS }} << EOF
           
               echo "connected"
