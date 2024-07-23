@@ -159,12 +159,13 @@ jobs:
               echo "connected"
               docker-compose down --rmi all -v
               echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
-#              docker login ghcr.io -u ${{ github.repository_owner }} -p ${{secrets.GITHUB_TOKEN}}
               docker pull $API_IMAGE
               docker pull $NGINX_IMAGE
               docker-compose --env-file=.env -f docker-compose.prod.yml up -d --build
               docker logout
           EOF
+
+#  docker login ghcr.io -u ${{ github.repository_owner }} -p ${{secrets.GITHUB_TOKEN}}
 #  ssh -o StrictHostKeyChecking=no ${{secrets.HOST}}@${{ secrets.AWS_EC2_IP_ADDRESS }} << EOF
 #  scp -o StrictHostKeyChecking=no -r ./.env ./docker-compose.prod.yml ${{secrets.HOST}}@${{ secrets.AWS_EC2_IP_ADDRESS }}:
 #  ssh -o StrictHostKeyChecking=no ${{secrets.HOST}}@${{ secrets.AWS_EC2_IP_ADDRESS }} << EOF
