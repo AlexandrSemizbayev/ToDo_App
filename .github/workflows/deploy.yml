@@ -120,7 +120,7 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           mv private_key.pem ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.AWS_EC2_IP_ADDRESS }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ secrets.PUBLIC_IPV4_DNS }} >> ~/.ssh/known_hosts
           chmod 600 ~/.ssh/id_rsa
       - name: Add the private SSH key to the ssh-agent
         env:
@@ -154,7 +154,7 @@ jobs:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
 
         run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{secrets.HOST}}@${{ secrets.AWS_EC2_IP_ADDRESS }} << EOF
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{secrets.AWS_USER}}@${{ secrets.PUBLIC_IPV4_DNS }} << EOF
           
               echo "connected"
               docker-compose down --rmi all -v
@@ -165,5 +165,5 @@ jobs:
               docker logout
           EOF
 #  ssh -o StrictHostKeyChecking=no ${{secrets.HOST}}@${{ secrets.AWS_EC2_IP_ADDRESS }} << EOF
-#scp -o StrictHostKeyChecking=no -r ./.env ./docker-compose.prod.yml ${{secrets.HOST}}@${{ secrets.AWS_EC2_IP_ADDRESS }}:
+#  scp -o StrictHostKeyChecking=no -r ./.env ./docker-compose.prod.yml ${{secrets.HOST}}@${{ secrets.AWS_EC2_IP_ADDRESS }}:
 #  ssh -o StrictHostKeyChecking=no ${{secrets.HOST}}@${{ secrets.AWS_EC2_IP_ADDRESS }} << EOF
