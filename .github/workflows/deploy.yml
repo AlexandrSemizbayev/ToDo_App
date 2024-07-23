@@ -111,15 +111,26 @@ jobs:
 #          ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
 #          ssh-keyscan github.com >> ~/.ssh/known_hosts
 #          chmod 600 ~/.ssh/id_rsa
-      - name: Add the private SSH key to the ssh-agent
-        env:
-          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+      - name: Decode SSH private key
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 -d > private_key.pem
+          chmod 600 private_key.pem
+
+      - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
-          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
-          ssh-keyscan github.com >> ~/.ssh/known_hosts
-          ssh-add - <<< "${{ secrets.PRIVATE_KEY }}"
-          echo "ls ~/.ssh/"
+          mv private_key.pem ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_rsa
+#      - name: Add the private SSH key to the ssh-agent
+#        env:
+#          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+#        run: |
+#          mkdir -p ~/.ssh
+#          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+#          ssh-keyscan github.com >> ~/.ssh/known_hosts
+#          ssh-add - <<< "${{ secrets.PRIVATE_KEY }}"
+#          echo "ls ~/.ssh/"
 #      - name: Add the private SSH key to the ssh-agent
 #        env:
 #          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
@@ -137,9 +148,8 @@ jobs:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
 
         run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{secrets.HOST}}@${{ secrets.AWS_EC2_IP_ADDRESS }} << EOF
           
-          scp -o StrictHostKeyChecking=no -r ./.env ./docker-compose.prod.yml ${{secrets.HOST}}@${{ secrets.AWS_EC2_IP_ADDRESS }}:
-          ssh -o StrictHostKeyChecking=no ${{secrets.HOST}}@${{ secrets.AWS_EC2_IP_ADDRESS }} << EOF
               echo "connected"
               docker-compose down --rmi all -v
               docker login ghcr.io -u ${{ github.repository_owner }} -p ${{secrets.GITHUB_TOKEN}}
@@ -148,4 +158,6 @@ jobs:
               docker-compose --env-file=.env -f docker-compose.prod.yml up -d --build
               docker logout
           EOF
+#  ssh -o StrictHostKeyChecking=no ${{secrets.HOST}}@${{ secrets.AWS_EC2_IP_ADDRESS }} << EOF
+#scp -o StrictHostKeyChecking=no -r ./.env ./docker-compose.prod.yml ${{secrets.HOST}}@${{ secrets.AWS_EC2_IP_ADDRESS }}:
 #  ssh -o StrictHostKeyChecking=no ${{secrets.HOST}}@${{ secrets.AWS_EC2_IP_ADDRESS }} << EOF
