@@ -5,8 +5,8 @@ services:
     image: '${API_IMAGE}'
     command: gunicorn core.wsgi:application --bind 0.0.0.0:8000
     volumes:
-      - static_volume:/store/staticfiles/
-      - media_volume:/store/mediafiles/
+      - static_volume:/api/staticfiles/
+      - media_volume:/api/mediafiles/
     expose:
       - 80
   nginx:
