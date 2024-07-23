@@ -63,7 +63,7 @@ jobs:
 
     # env:
     #   PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-#    needs: build
+    needs: build
     outputs:
       secret_key_exists: ${{steps.check_secrets.outputs.defined}}
     steps:
@@ -87,7 +87,6 @@ jobs:
     name: Deploy to AWS EC2
     runs-on: ubuntu-latest
     environment: production
-#     needs: build
     needs: checking-secrets
     if: needs.checking-secrets.outputs.secret_key_exists == 'true'
     steps:
