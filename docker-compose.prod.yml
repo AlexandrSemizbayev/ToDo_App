@@ -17,6 +17,6 @@ services:
       volumes:
         - static_volume:/store/staticfiles/
         - media_volume:/store/mediafiles/
-  volumes:
-    static_volume:
-    media_volume:
+volumes:
+  static_volume:
+  media_volume:
