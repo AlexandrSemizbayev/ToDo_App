@@ -158,7 +158,8 @@ jobs:
           
               echo "connected"
               docker-compose down --rmi all -v
-              docker login ghcr.io -u ${{ github.repository_owner }} -p ${{secrets.GITHUB_TOKEN}}
+              echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+#              docker login ghcr.io -u ${{ github.repository_owner }} -p ${{secrets.GITHUB_TOKEN}}
               docker pull $API_IMAGE
               docker pull $NGINX_IMAGE
               docker-compose --env-file=.env -f docker-compose.prod.yml up -d --build
