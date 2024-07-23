@@ -161,7 +161,7 @@ jobs:
               echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
               docker pull $API_IMAGE
               docker pull $NGINX_IMAGE
-              docker-compose --env-file=.env -f docker-compose.prod.yml up -d --build
+              sudo docker-compose --env-file=.env -f docker-compose.prod.yml up -d --build
               docker logout
           EOF
 
