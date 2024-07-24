@@ -16,7 +16,7 @@ RUN echo "api docker"
 # update and  install dependencies
 RUN pip install --upgrade pip
 COPY ./requirements.txt /todo/requirements.txt
-RUN pip install -r /api/requirements.txt
+RUN pip install -r /todo/requirements.txt
 
 # copy project
 COPY . .
