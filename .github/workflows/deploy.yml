@@ -157,7 +157,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{secrets.AWS_USER}}@${{ secrets.PUBLIC_IPV4_DNS }} << EOF
           
               echo "connected"
-              sudo docker-compose down --rmi all -v
+              sudo docker-compose -f docker-compose.prod.yml down --rmi all -v
               echo ${{ secrets.GITHUB_TOKEN }} | sudo docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
               echo ${{ env.API_IMAGE }}
               sudo docker pull ${{ env.API_IMAGE }}
