@@ -10,7 +10,6 @@ services:
       - media_volume:/todo/mediafiles/
     expose:
       - 8000
-    working_dir: /todo
   nginx:
     build:
       context: ./nginx

@@ -15,13 +15,13 @@ RUN echo "api docker"
 
 # update and  install dependencies
 RUN pip install --upgrade pip
-COPY ./requirements.txt /todo/requirements.txt
-RUN pip install -r /todo/requirements.txt
+COPY ./requirements.txt .
+RUN pip install -r requirements.txt
 
 # copy project
-COPY . /todo
+COPY . .
 
 # Expose the port server is running on
-EXPOSE 8000
+#EXPOSE 8000
 
 #CMD ["gunicorn", "core.wsgi:application", "--bind", "0.0.0.0:8000"]
