@@ -11,6 +11,7 @@ ENV PYTHONDOWNWRITEBYTECODE 1
 ENV PYTHONNUNBUFFER 1
 
 RUN echo ls -a
+RUN echo "api docker"
 
 # update and  install dependencies
 RUN pip install --upgrade pip

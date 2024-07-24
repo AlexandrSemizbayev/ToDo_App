@@ -2,6 +2,7 @@
 FROM nginx:latest
 # Remove any existing config files
 RUN rm /etc/nginx/conf.d/*
+RUN echo "nginx docker"
 # Copy the custom Nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/
 # Expose port 80 for Nginx
