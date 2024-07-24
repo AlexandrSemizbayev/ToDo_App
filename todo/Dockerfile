@@ -19,7 +19,7 @@ COPY ./requirements.txt /todo/requirements.txt
 RUN pip install -r /todo/requirements.txt
 
 # copy project
-COPY . .
+COPY . /todo
 
 # Expose the port server is running on
 EXPOSE 8000
