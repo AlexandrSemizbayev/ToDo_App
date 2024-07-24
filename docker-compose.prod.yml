@@ -9,7 +9,6 @@ services:
       - media_volume:/todo/mediafiles/
     expose:
       - 8000
-    working_dir: /todo
   nginx:
       container_name: 'nginx'
       image: '${NGINX_IMAGE}'
