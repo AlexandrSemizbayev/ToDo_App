@@ -1,5 +1,5 @@
 # TODO App
-<a href="localhost:5173" target="_blank">🌐 Deployed project</a>
+<a href="${{ secrets.PUBLIC_IPV4_DNS }}">🌐 Deployed project</a>
 ## Project Description
 This project is a scalable TODO application built using Django for the backend and React with Vite.js for the frontend.
 
