@@ -1,0 +1,7 @@
+.image-button {
+  transition: transform .1s ease-in-out;
+  cursor: pointer;
+  &:active {
+    transform: scale(.90);
+  }
+}

@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+$default_border_color: #4F4F4F99;
+
+*, ::before, ::after {
+  border-color: $default_border_color;
+  outline-color: $default_border_color;
+}
+
+:focus-visible {
+  outline: $default_border_color auto 1px;
+}

@@ -1,5 +1,10 @@
 version: '3'
 services:
+  frontend:
+    container_name: 'frontend'
+    image: '${FRONTEND_IMAGE}'
+    expose:
+      - "80:80"
   api:
     container_name: 'api'
     image: '${API_IMAGE}'
@@ -9,14 +14,6 @@ services:
       - media_volume:/todo/mediafiles/
     expose:
       - 8000
-  nginx:
-      container_name: 'nginx'
-      image: '${NGINX_IMAGE}'
-      ports:
-        - 80:80
-      volumes:
-        - static_volume:/todo/staticfiles/
-        - media_volume:/todo/mediafiles/
 volumes:
   static_volume:
   media_volume:

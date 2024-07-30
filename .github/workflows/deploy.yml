@@ -6,13 +6,9 @@ on:
       - production
 
 env:
-  #
+  FRONTEND_IMAGE: ghcr.io/$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')/frontend
   API_IMAGE: ghcr.io/$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')/api
-  NGINX_IMAGE: ghcr.io/$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')/nginx
   REGISTRY: ghcr.io
-
-#secrets:
-#  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
 
 jobs:
@@ -29,25 +25,23 @@ jobs:
       - name: Set environment variables to .env
         run: |
           echo "API_IMAGE=$(echo ${{env.API_IMAGE}} )" >> $GITHUB_ENV
-          echo "NGINX_IMAGE=$(echo ${{env.NGINX_IMAGE}} )" >> $GITHUB_ENV
-#      - name: Log in to GitHub Container Registry
-#        uses: docker/login-action@v3
-#        env:
-#          PERSONAL_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        with:
-#          registry: ghcr.io
-#          username: "${{ github.actor }}"
-#          password: ${{ secrets.GITHUB_TOKEN }}
+          echo "FRONTEND_IMAGE=$(echo ${{env.FRONTEND_IMAGE}} )" >> $GITHUB_ENV
       - name: Log in to GitHub Packages
         env:
           PERSONAL_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           USER_NAME: ${{ github.repository_owner }}
         run: echo $PERSONAL_ACCESS_TOKEN | docker login ghcr.io -u "$USER_NAME" --password-stdin
 
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm install
+          npm run build
+          cd ..
       - name: Pull images
         run: |
           docker pull ${{ env.API_IMAGE }} || true
-          docker pull ${{ env.NGINX_IMAGE }} || true
+          docker pull ${{ env.FRONTEND_IMAGE }} || true
       - name: Build images
         id: build-images
         run: |
@@ -55,31 +49,22 @@ jobs:
       - name: Push images
         run: |
           docker push ${{ env.API_IMAGE }}
-          docker push ${{ env.NGINX_IMAGE }}
+          docker push ${{ env.FRONTEND_IMAGE }}
   checking-secrets:
     name: Checking secrets
     runs-on: ubuntu-latest
     environment: production
-
-    # env:
-    #   PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
     needs: build
     outputs:
       secret_key_exists: ${{steps.check_secrets.outputs.defined}}
     steps:
-#      - name: Dump GitHub context
-#        env:
-#          GITHUB_CONTEXT: ${{ toJson(github) }}
-#        run: echo "$GITHUB_CONTEXT"
       - name: Check for Secrets availabilities
         id: check_secrets
         shell: bash
         run: |
           if [[ -n "${{ secrets.BASE64_PEM }}" ]]; then
-            echo "${{ toJson(secrets) }}";
             echo "defined=true" >> $GITHUB_OUTPUT;
           else
-            echo "${{ toJson(secrets) }}"
             echo "is undefined";
             echo "defined=false" >> $GITHUB_OUTPUT;
           fi
@@ -96,20 +81,9 @@ jobs:
       - name: Add environment variables to .env
         run: |
           echo API_IMAGE=${{ env.API_IMAGE }} >> .env
-          echo NGINX_IMAGE=${{ env.NGINX_IMAGE }} >> .env
+          echo FRONTEND_IMAGE=${{ env.FRONTEND_IMAGE }} >> .env
           echo NAMESPACE=${{ github.repository_owner }} >> .env
           echo PERSONAL_ACCESS_TOKEN=${{ secrets.GITHUB_TOKEN }} >> .env
-#      - name: Decode SSH private key
-#        run: |
-#          mkdir -p ~/.ssh
-#          echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 -d > ~/.ssh/id_rsa
-#          chmod 600 ~/.ssh/id_rsa
-#
-#      - name: Set up SSH
-#        run: |
-#          ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
-#          ssh-keyscan github.com >> ~/.ssh/known_hosts
-#          chmod 600 ~/.ssh/id_rsa
       - name: Decode SSH private key
         run: |
           echo "${{ secrets.BASE64_PEM }}" | base64 -d > private_key.pem
@@ -127,27 +101,6 @@ jobs:
         run: |
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null
           ssh-add ~/.ssh/id_rsa
-#      - name: Add the private SSH key to the ssh-agent
-#        env:
-#          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-#        run: |
-#          mkdir -p ~/.ssh
-#          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
-#          ssh-keyscan github.com >> ~/.ssh/known_hosts
-#          ssh-add - <<< "${{ secrets.PRIVATE_KEY }}"
-#          echo "ls ~/.ssh/"
-#      - name: Add the private SSH key to the ssh-agent
-#        env:
-#          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-#          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-#
-#        run: |
-#          mkdir -p ~/.ssh
-#          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
-#          ssh-keyscan github.com >> ~/.ssh/known_hosts
-#          chmod 400 "$SSH_PRIVATE_KEY"
-#          printf "%s" "${SSH_PRIVATE_KEY}" | ssh-add -
-#          chmod 700 ~/.ssh
       - name: Deploy images on AWS EC2
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
@@ -159,14 +112,8 @@ jobs:
               echo "connected"
               sudo docker-compose -f docker-compose.prod.yml down --rmi all -v
               echo ${{ secrets.GITHUB_TOKEN }} | sudo docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
-              echo ${{ env.API_IMAGE }}
+              sudo docker pull ${{ env.FRONTEND_IMAGE }}
               sudo docker pull ${{ env.API_IMAGE }}
-              sudo docker pull ${{ env.NGINX_IMAGE }}
               sudo docker-compose --env-file=.env -f docker-compose.prod.yml up -d --build
               sudo docker logout
           EOF
-
-#  docker login ghcr.io -u ${{ github.repository_owner }} -p ${{secrets.GITHUB_TOKEN}}
-#  ssh -o StrictHostKeyChecking=no ${{secrets.HOST}}@${{ secrets.AWS_EC2_IP_ADDRESS }} << EOF
-#  scp -o StrictHostKeyChecking=no -r ./.env ./docker-compose.prod.yml ${{secrets.HOST}}@${{ secrets.AWS_EC2_IP_ADDRESS }}:
-#  ssh -o StrictHostKeyChecking=no ${{secrets.HOST}}@${{ secrets.AWS_EC2_IP_ADDRESS }} << EOF

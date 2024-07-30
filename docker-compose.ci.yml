@@ -1,5 +1,14 @@
 version: '3'
 services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      cache_from:
+        - '${FRONTEND_IMAGE}'
+    image: '${FRONTEND_IMAGE}'
+    expose:
+      - "80:80"
   api:
     build:
       context: ./todo
@@ -10,12 +19,3 @@ services:
     command: gunicorn core.wsgi:application --bind 0.0.0.0:8000
     expose:
       - 8000
-  nginx:
-    build:
-     context: ./nginx
-     dockerfile: Dockerfile
-     cache_from:
-        - '${NGINX_IMAGE}'
-    image: '${NGINX_IMAGE}'
-    ports:
-      - 80:80

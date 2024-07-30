@@ -1,5 +1,11 @@
 version: '3'
 services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
   api:
     build:
       context: ./todo
@@ -10,15 +16,6 @@ services:
       - media_volume:/todo/mediafiles/
     expose:
       - 8000
-  nginx:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
-    ports:
-      - 80:80
-    volumes:
-      - static_volume:/todo/staticfiles/
-      - media_volume:/todo/mediafiles/
 volumes:
   static_volume:
   media_volume:
