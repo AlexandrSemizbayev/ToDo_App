@@ -7,7 +7,7 @@ services:
       cache_from:
         - '${FRONTEND_IMAGE}'
     image: '${FRONTEND_IMAGE}'
-    expose:
+    ports:
       - "80:80"
   api:
     build:
