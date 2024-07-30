@@ -1,5 +1,5 @@
 # TODO App
-<a href="https://ec2-18-189-69-172.us-east-2.compute.amazonaws.com">🌐 Deployed project</a>
+<a href="http://ec2-18-189-69-172.us-east-2.compute.amazonaws.com">🌐 Deployed project</a>
 ## Project Description
 This project is a scalable TODO application built using Django for the backend and React with Vite.js for the frontend.
 
