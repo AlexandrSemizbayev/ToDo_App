@@ -11,7 +11,7 @@ services:
       - "443:80"
   api:
     build:
-      context: ./todo
+      context: ./backend/todo
       dockerfile: Dockerfile
       cache_from:
         - '${API_IMAGE}'
