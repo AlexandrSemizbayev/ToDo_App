@@ -1,0 +1,17 @@
+input:focus-visible,
+textarea:focus-visible {
+  outline: none;
+}
+
+.todo {
+  box-shadow: -3px -2px 4px -4px black;
+  flex-direction: column;
+  height: auto;
+
+}
+
+.color-pickers {
+  background-color: #2f2f2fd6;
+  overflow: hidden;
+  transition: all .4s ease-in-out;
+}

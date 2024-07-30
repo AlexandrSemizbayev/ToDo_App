@@ -1,24 +1,21 @@
 version: '3'
 services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
   api:
     build:
-      context: ./todo
+      context: ./backend/todo
       dockerfile: Dockerfile
     command: gunicorn todo.wsgi:application --bind 0.0.0.0:8000
     volumes:
       - static_volume:/todo/staticfiles/
       - media_volume:/todo/mediafiles/
     expose:
-      - 80
-  nginx:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
-    ports:
-      - 80:80
-    volumes:
-      - static_volume:/todo/staticfiles/
-      - media_volume:/todo/mediafiles/
+      - 8000
 volumes:
   static_volume:
   media_volume:

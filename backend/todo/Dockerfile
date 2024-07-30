@@ -11,14 +11,17 @@ ENV PYTHONDOWNWRITEBYTECODE 1
 ENV PYTHONNUNBUFFER 1
 
 RUN echo ls -a
+RUN echo "api docker"
 
 # update and  install dependencies
 RUN pip install --upgrade pip
-COPY ./requirements.txt /api/requirements.txt
-RUN pip install -r /api/requirements.txt
+COPY ./requirements.txt .
+RUN pip install -r requirements.txt
 
 # copy project
 COPY . .
 
 # Expose the port server is running on
-EXPOSE 8000
+#EXPOSE 8000
+
+#CMD ["gunicorn", "core.wsgi:application", "--bind", "0.0.0.0:8000"]

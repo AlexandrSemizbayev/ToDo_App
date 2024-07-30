@@ -1,22 +1,19 @@
 version: '3'
 services:
+  frontend:
+    container_name: 'frontend'
+    image: '${FRONTEND_IMAGE}'
+    ports:
+      - "80:80"
   api:
     container_name: 'api'
     image: '${API_IMAGE}'
-    command: gunicorn core.wsgi:application --bind 0.0.0.0:8000
+    command: gunicorn todo.wsgi:application --bind 0.0.0.0:8000
     volumes:
-      - static_volume:/store/staticfiles/
-      - media_volume:/store/mediafiles/
+      - static_volume:/todo/staticfiles/
+      - media_volume:/todo/mediafiles/
     expose:
-      - 80
-  nginx:
-      container_name: 'nginx'
-      image: '${NGINX_IMAGE}'
-      ports:
-        - 80:80
-      volumes:
-        - static_volume:/store/staticfiles/
-        - media_volume:/store/mediafiles/
-  volumes:
-    static_volume:
-    media_volume:
+      - 8000
+volumes:
+  static_volume:
+  media_volume:
