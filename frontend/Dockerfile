@@ -2,7 +2,6 @@ FROM nginx:latest
 RUN echo "👋 Hi, i am a frontend docker"
 WORKDIR /app
 COPY . .
-RUN ls
 COPY ./dist /srv/www/dist
 COPY ./dist /usr/share/nginx/html
 COPY ./nginx.conf /etc/d/default.conf
